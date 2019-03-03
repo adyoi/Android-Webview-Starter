@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+    <title>Webview Starter</title>
+
+    <!--
+
+    Webview Starter v 1.0
+    Created by Adi Apriyanto
+    Tangerang Selatan, March 2018
+    Permission to copy source code is only permitted for Education
+
+    -->
+
+    <script type="text/javascript">
+        // This is a function of Android that works in javascript
+        // The callback functions must be attached in <head>
+        function showText (text) {
+            document.getElementById('from-android').value = text;
+        }
+    </script>
+
+</head>
+<body>
+    <label>To Android</label>
+    <input id="to-android" type="text" />
+    <button id="send">Send</button>
+    <br>
+    <label>From Android</label>
+    <input id="from-android" type="text" readonly />
+    <button id="get">Get</button>
+</body>
+<script type="text/javascript">
+
+  document.getElementById('send').addEventListener('click', function(e) {
+    if (typeof Android !== 'undefined' && Android !== null) {
+        input = document.getElementById('to-android').value;
+        Android.showToast(input);
+    } else {
+        alert('Only execute on Android');
+    }
+  });
+
+  document.getElementById('get').addEventListener('click', function(e) {
+    if (typeof Android !== 'undefined' && Android !== null) {
+        input = document.getElementById('to-android').value;
+        Android.sendText(input);
+    } else {
+        alert('Only execute on Android');
+    }
+  });
+
+</script>
+</html>
