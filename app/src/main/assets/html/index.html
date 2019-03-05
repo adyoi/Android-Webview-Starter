@@ -5,7 +5,7 @@
 
     <!--
 
-    Webview Starter v 1.0
+    Webview Starter v 1.1
     Created by Adi Apriyanto
     Tangerang Selatan, March 2018
     Permission to copy source code is only permitted for Education
@@ -29,26 +29,40 @@
     <label>From Android</label>
     <input id="from-android" type="text" readonly />
     <button id="get">Get</button>
+    <br>
+    <button id="notif">Notif</button>
 </body>
 <script type="text/javascript">
 
-  document.getElementById('send').addEventListener('click', function(e) {
-    if (typeof Android !== 'undefined' && Android !== null) {
-        input = document.getElementById('to-android').value;
-        Android.showToast(input);
-    } else {
-        alert('Only execute on Android');
-    }
-  });
+    // Send to Android
+    document.getElementById('send').addEventListener('click', function(e) {
+        if (typeof Android !== 'undefined' && Android !== null) {
+            input = document.getElementById('to-android').value;
+            Android.showToast(input);
+        } else {
+            alert('Only execute on Android');
+        }
+    });
+    document.getElementById('notif').addEventListener('click', function(e) {
+        if (typeof Android !== 'undefined' && Android !== null) {
+            id    = 1;
+            title = "Hello";
+            text  = "This is very awesome !";
+            Android.showNotification(id, title, text);
+        } else {
+            alert('Only execute on Android');
+        }
+    });
 
-  document.getElementById('get').addEventListener('click', function(e) {
-    if (typeof Android !== 'undefined' && Android !== null) {
-        input = document.getElementById('to-android').value;
-        Android.sendText(input);
-    } else {
-        alert('Only execute on Android');
-    }
-  });
+    // Send to Android and Callback from Android
+    document.getElementById('get').addEventListener('click', function(e) {
+        if (typeof Android !== 'undefined' && Android !== null) {
+            input = document.getElementById('to-android').value;
+            Android.sendText(input);
+        } else {
+            alert('Only execute on Android');
+        }
+    });
 
 </script>
 </html>

@@ -1,10 +1,15 @@
 package com.adyoi.webviewstarter
 
+
+import android.app.PendingIntent
 import android.content.Context
 import android.content.DialogInterface
-import android.support.v7.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
+import android.support.v7.app.AppCompatActivity
+import android.support.v4.app.NotificationCompat
+import android.support.v4.app.NotificationManagerCompat
 import android.webkit.*
 import android.widget.Toast
 
@@ -29,7 +34,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Webview Starter v 1.0
+        // Webview Starter v 1.1
         // Created by Adi Apriyanto
         // Tangerang Selatan, March 2018
         // Permission to copy source code is only permitted for Education
@@ -54,11 +59,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private inner class WebInterface(val mContext: Context, val mView: WebView) {
-
         // From Webview to Android
         @JavascriptInterface
         fun showToast(Text: String) {
             Toast.makeText((applicationContext), Text, Toast.LENGTH_SHORT).show()
+        }
+        @JavascriptInterface
+        fun showNotification(id: Int, title: String, text: String) {
+            createNotificationChannel(id, title, text)
         }
 
         // From Android to Webview
@@ -68,5 +76,22 @@ class MainActivity : AppCompatActivity() {
             var stamp = "Hello :) - "
             myWebView.post{myWebView.loadUrl("javascript:showText(\"$stamp$Text\")")}
         }
+    }
+
+    private fun createNotificationChannel(notificationId: Int, notificationTitle: String, notificationText: String) {
+        val intent = Intent(this, SplashScreenActivity::class.java).apply {
+            var flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val notificationManager = NotificationManagerCompat.from(this)
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
+        val builder = NotificationCompat
+            .Builder(this, "CHANNEL_ID")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle(notificationTitle)
+            .setContentText(notificationText)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            notificationManager.notify(notificationId, builder.build())
     }
 }
