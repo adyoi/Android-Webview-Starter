@@ -1,6 +1,6 @@
 package com.adyoi.webviewstarter
 
-
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetJavaScriptEnabled", "AddJavascriptInterface")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -56,6 +57,7 @@ class MainActivity : AppCompatActivity() {
 
         // Your Live Page
         // val myUrl = "https://www.domain.com"
+
         val myWebView: WebView = findViewById(R.id.webview)
         myWebView.settings.javaScriptEnabled = true
         myWebView.settings.domStorageEnabled = true
@@ -68,34 +70,35 @@ class MainActivity : AppCompatActivity() {
         myWebView.webViewClient = object : WebViewClient() {
             @Suppress("DEPRECATION")
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                if (url!!.startsWith("tel:")) {
-                    val intent = Intent(Intent.ACTION_DIAL, Uri.parse(url))
-                    startActivity(intent)
-                    return true
+                when {
+                    url!!.startsWith("tel:") -> {
+                        val intent = Intent(Intent.ACTION_DIAL, Uri.parse(url))
+                        startActivity(intent)
+                        return true
+                    }
+                    url.startsWith("mailto:") -> {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        startActivity(intent)
+                        return true
+                    }
+                    url.startsWith("whatsapp://") -> {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        intent.setPackage("com.whatsapp")
+                        startActivity(intent)
+                        return true
+                    }
+                    url.contains("https://adyoi.blogspot.com") -> {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        startActivity(intent)
+                        return true
+                    }
+                    else -> return super.shouldOverrideUrlLoading(view, url)
                 }
-                if (url.startsWith("mailto:")) {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                    startActivity(intent)
-                    return true
-                }
-                if (url.startsWith("whatsapp://")) {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                    intent.setPackage("com.whatsapp")
-                    startActivity(intent)
-                    return true
-                }
-                if(url.contains("https://adyoi.blogspot.com")) {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                    startActivity(intent)
-                    return true
-                }
-                return super.shouldOverrideUrlLoading(view, url)
             }
         }
-        if (isNetworkAvailable()) {
-            myWebView.loadUrl(myUrl)
-        } else {
-            myWebView.loadUrl(errorUrl)
+        when {
+            isNetworkAvailable() -> myWebView.loadUrl(myUrl)
+            else -> myWebView.loadUrl(errorUrl)
         }
         myWebView.reload()
     }
@@ -155,4 +158,5 @@ class MainActivity : AppCompatActivity() {
         val activeNetworkInfo = connectivityManager.activeNetworkInfo
         return activeNetworkInfo != null && activeNetworkInfo.isConnected
     }
+
 }
