@@ -21,8 +21,6 @@ import android.webkit.*
 import android.widget.Toast
 
 @Suppress("OverridingDeprecatedMember")
-
-
 class MainActivity : AppCompatActivity() {
 
     private var doubleClick = false
