@@ -1,32 +1,43 @@
 package com.adyoi.webviewstarter
 
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
+import android.content.res.Resources
+import android.graphics.BitmapFactory
+import android.net.ConnectivityManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
+import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
+import android.support.v4.content.ContextCompat
 import android.webkit.*
 import android.widget.Toast
 
+@Suppress("OverridingDeprecatedMember")
+
+
 class MainActivity : AppCompatActivity() {
+
+    private var doubleClick = false
 
     override fun onBackPressed() {
         val myWebView: WebView = findViewById(R.id.webview)
-        if (myWebView.canGoBack()) {
-            myWebView.goBack()
-        } else {
-            AlertDialog.Builder(this)
-                .setMessage("Are you sure you want to exit ?")
-                .setPositiveButton("Yes", DialogInterface.OnClickListener { _, _ ->
-                    finish()
-                })
-                .setNegativeButton("No", null)
-                .show()
+        when {
+            myWebView.canGoBack() -> myWebView.goBack()
+            doubleClick -> finish()
+            else -> {
+                Toast.makeText(this, "please click back again to exit", Toast.LENGTH_SHORT).show()
+                Handler().postDelayed({
+                    doubleClick = true
+                }, 200)
+            }
         }
     }
 
@@ -34,18 +45,18 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Webview Starter v 1.1
+        // Webview Starter v 1.2
         // Created by Adi Apriyanto
         // Tangerang Selatan, March 2018
         // Permission to copy source code is only permitted for Education
 
         // Sample Resource Page
         val myUrl = "file:///android_asset/html/index.html"
+        val errorUrl = "file:///android_asset/html/error.html"
 
         // Your Live Page
         // val myUrl = "https://www.domain.com"
         val myWebView: WebView = findViewById(R.id.webview)
-
         myWebView.settings.javaScriptEnabled = true
         myWebView.settings.domStorageEnabled = true
         myWebView.settings.allowContentAccess = true
@@ -54,7 +65,38 @@ class MainActivity : AppCompatActivity() {
             "Android"
         )
         myWebView.webChromeClient = WebChromeClient()
-        myWebView.loadUrl(myUrl)
+        myWebView.webViewClient = object : WebViewClient() {
+            @Suppress("DEPRECATION")
+            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                if (url!!.startsWith("tel:")) {
+                    val intent = Intent(Intent.ACTION_DIAL, Uri.parse(url))
+                    startActivity(intent)
+                    return true
+                }
+                if (url.startsWith("mailto:")) {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    startActivity(intent)
+                    return true
+                }
+                if (url.startsWith("whatsapp://")) {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    intent.setPackage("com.whatsapp")
+                    startActivity(intent)
+                    return true
+                }
+                if(url.contains("https://adyoi.blogspot.com")) {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    startActivity(intent)
+                    return true
+                }
+                return super.shouldOverrideUrlLoading(view, url)
+            }
+        }
+        if (isNetworkAvailable()) {
+            myWebView.loadUrl(myUrl)
+        } else {
+            myWebView.loadUrl(errorUrl)
+        }
         myWebView.reload()
     }
 
@@ -73,25 +115,44 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface
         fun sendText(Text: String) {
             val myWebView: WebView = findViewById(R.id.webview)
-            var stamp = "Hello :) - "
-            myWebView.post{myWebView.loadUrl("javascript:showText(\"$stamp$Text\")")}
+            var myStamp = "Hello :) - "
+            myWebView.post{myWebView.loadUrl("javascript:showText(\"$myStamp$Text\")")}
         }
     }
 
     private fun createNotificationChannel(notificationId: Int, notificationTitle: String, notificationText: String) {
-        val intent = Intent(this, SplashScreenActivity::class.java).apply {
-            var flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        val channelId = "ANDROID_WEBVIEW_STARTER"
+        val channelName = "Notification Default"
+        val channelDescription = ""
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> {
+                val importance = NotificationManager.IMPORTANCE_DEFAULT
+                val channel = NotificationChannel(channelId, channelName, importance)
+                channel.description = channelDescription
+                val notificationManager = getSystemService(NotificationManager::class.java)
+                notificationManager.createNotificationChannel(channel)
+            }
         }
         val notificationManager = NotificationManagerCompat.from(this)
-        val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
         val builder = NotificationCompat
-            .Builder(this, "CHANNEL_ID")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .Builder(this, channelId)
+            .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
+            .setSmallIcon(R.drawable.ic_launcher)
+            .setLargeIcon(BitmapFactory.decodeResource(Resources.getSystem(), R.mipmap.ic_launcher_legacy))
             .setContentTitle(notificationTitle)
             .setContentText(notificationText)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             notificationManager.notify(notificationId, builder.build())
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetworkInfo = connectivityManager.activeNetworkInfo
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected
     }
 }
