@@ -4,7 +4,7 @@
 ![GitHub issues](https://img.shields.io/github/issues/adyoi/Android-Webview-Starter.svg)
 ![GitHub All Releases](https://img.shields.io/github/downloads/adyoi/Android-Webview-Starter/total.svg)
 
-Android Webview Starter v 1.1
+Android Webview Starter v 1.2
 <br> Created by Adi Apriyanto
 <br> Tangerang Selatan, March 2018
 <br> Permission to copy source code is only permitted for Education
@@ -15,6 +15,8 @@ Features :
 3. Function Callback
 4. Create Notification (New)
 5. Back Press Confirmation
+6. External Link (New)
+7. Icon Launcher (New)
 
 ![alt text](https://raw.githubusercontent.com/adyoi/Android-Webview-Starter/master/screenshot/image1.jpeg)
 ![alt text](https://raw.githubusercontent.com/adyoi/Android-Webview-Starter/master/screenshot/image2.jpeg)
